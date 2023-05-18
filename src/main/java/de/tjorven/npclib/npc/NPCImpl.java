@@ -1,19 +1,25 @@
 package de.tjorven.npclib.npc;
 
+import com.mojang.authlib.GameProfile;
 import de.tjorven.npclib.NpcLib;
 import de.tjorven.npclib.npc.actions.NPCItemSlot;
 import de.tjorven.npclib.npc.skin.Skin;
 import de.tjorven.npclib.npc.skin.SkinUtil;
 import de.tjorven.npclib.util.Pair;
-import net.minecraft.network.protocol.game.*;
+import net.minecraft.network.protocol.game.ClientboundAddPlayerPacket;
+import net.minecraft.network.protocol.game.ClientboundPlayerInfoRemovePacket;
+import net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePacket;
+import net.minecraft.network.protocol.game.ClientboundRemoveEntitiesPacket;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.world.entity.EquipmentSlot;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.craftbukkit.v1_19_R3.CraftWorld;
 import org.bukkit.craftbukkit.v1_19_R3.entity.CraftPlayer;
 import org.bukkit.craftbukkit.v1_19_R3.inventory.CraftItemStack;
 import org.bukkit.entity.Entity;
@@ -21,30 +27,45 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 public class NPCImpl implements NPC {
 
-    ServerPlayer serverPlayer;
-    Location spawnLocation;
-    List<Player> implementedPlayers = new ArrayList<>();
+    private final ServerPlayer serverPlayer;
+    private final Location spawnLocation;
+    private final List<Player> implementedPlayers = new ArrayList<>();
+    private final List<String> names = new LinkedList<>();
 
-    public NPCImpl(ServerPlayer serverPlayer) {
-        this.serverPlayer = serverPlayer;
+    public NPCImpl(Location location, String name) {
+        this.spawnLocation = location;
+        implementedPlayers.addAll(Bukkit.getOnlinePlayers());
+        ServerLevel handle = ((CraftWorld) location.getWorld()).getHandle();
+        serverPlayer = new ServerPlayer(handle.getServer(), handle, new GameProfile(UUID.randomUUID(), name));
+    }
+
+    public NPCImpl(Player player, String name) {
+        this(player.getLocation(), name);
+    }
+
+    public NPCImpl(Player player, String name, Player... implemented) {
+        this(player.getLocation(), name);
+        implementedPlayers.addAll(Arrays.stream(implemented).toList());
+    }
+
+    public NPCImpl(Location location, String name, Player... implemented) {
+        this(location, name);
+        implementedPlayers.addAll(Arrays.stream(implemented).toList());
     }
 
     @Override
     public String[] getName() {
-        //TODO: get name
-        return null;
+        return names.toArray(new String[0]);
     }
 
     @Override
     public void setName(String... name) {
         //TODO: set name
+        names.addAll(Arrays.stream(name).toList());
     }
 
     @Override
