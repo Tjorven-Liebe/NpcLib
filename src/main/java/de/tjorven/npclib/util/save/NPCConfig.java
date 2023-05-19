@@ -2,7 +2,7 @@ package de.tjorven.npclib.util.save;
 
 import de.tjorven.npclib.NpcLibApi;
 import de.tjorven.npclib.npc.NPC;
-import de.tjorven.npclib.npc.actions.NPCItemSlot;
+import de.tjorven.npclib.npc.enums.NPCItemSlot;
 import de.tjorven.npclib.npc.skin.Skin;
 import de.tjorven.npclib.util.Pair;
 import org.bukkit.Location;
@@ -17,24 +17,24 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class NPCConfig {
-    private static final File file = new File("plugins/NpcLib/cache/npcs.yml");
-    private static final YamlConfiguration configuration = YamlConfiguration.loadConfiguration(file);
+    private static final File FILE = new File("plugins/NpcLib/cache/npcs.yml");
+    private static final YamlConfiguration CONFIGURATION = YamlConfiguration.loadConfiguration(FILE);
 
     public static void add(NPC npc) {
         String key = npc.getName();
         Skin skin = npc.getSkin();
-        configuration.set("npcs." + key + ".meta.spawnLocation", npc.getSpawnLocation());
-        configuration.set("npcs." + key + ".meta.name", "");
-        configuration.set("npcs." + key + ".meta.names", Arrays.stream(npc.getDisplayNames()).toList());
+        CONFIGURATION.set("npcs." + key + ".meta.spawnLocation", npc.getSpawnLocation());
+        CONFIGURATION.set("npcs." + key + ".meta.name", "");
+        CONFIGURATION.set("npcs." + key + ".meta.names", Arrays.stream(npc.getDisplayNames()).toList());
         npc.getItems().forEach(itemPair -> {
-            configuration.set("npcs." + key + ".meta.items." + itemPair.getFirst().name(), itemPair.getSecond());
+            CONFIGURATION.set("npcs." + key + ".meta.items." + itemPair.getFirst().name(), itemPair.getSecond());
         });
-        configuration.set("npcs." + key + ".meta.skin.name", skin.getName());
-        configuration.set("npcs." + key + ".meta.skin.value", skin.getValue());
-        configuration.set("npcs." + key + ".meta.skin.signature", skin.getSignature());
-        configuration.set("npcs." + key + ".state.shift", npc.isShifting());
-        configuration.set("npcs." + key + ".state.lockToPlayer", npc.isLockedViewToPlayer());
-        configuration.set("npcs." + key + ".state.isSpawned", npc.isSpawned());
+        CONFIGURATION.set("npcs." + key + ".meta.skin.name", skin.getName());
+        CONFIGURATION.set("npcs." + key + ".meta.skin.value", skin.getValue());
+        CONFIGURATION.set("npcs." + key + ".meta.skin.signature", skin.getSignature());
+        CONFIGURATION.set("npcs." + key + ".state.shift", npc.isShifting());
+        CONFIGURATION.set("npcs." + key + ".state.lockToPlayer", npc.isLockedViewToPlayer());
+        CONFIGURATION.set("npcs." + key + ".state.isSpawned", npc.isSpawned());
         save();
     }
 
@@ -44,25 +44,25 @@ public class NPCConfig {
 
     public static List<NPC> getNPCs() {
         List<NPC> list = new LinkedList<>();
-        configuration.getConfigurationSection("npcs").getKeys(false).forEach(npcsSection -> {
+        CONFIGURATION.getConfigurationSection("npcs").getKeys(false).forEach(npcsSection -> {
             list.add(getNPC(npcsSection));
         });
         return list;
     }
 
     public static NPC getNPC(String key) {
-        Location location = configuration.getLocation("npcs." + key + ".meta.spawnLocation");
-        String name = configuration.getString("npcs." + key + ".meta.spawnName");
-        List<String> names = configuration.getStringList("npcs." + key + ".meta.names");
-        Skin skin = new Skin(configuration.getString("npcs." + key + ".meta.skin.name"),
-                configuration.getString("npcs." + key + ".meta.skin.value"),
-                configuration.getString("npcs." + key + ".meta.skin.signature"));
-        boolean shift = configuration.getBoolean("npcs." + key + ".state.shift");
-        boolean lockToPlayer = configuration.getBoolean("npcs." + key + ".state.lockToPlayer");
-        boolean isSpawned = configuration.getBoolean("npcs." + key + ".state.isSpawned");
+        Location location = CONFIGURATION.getLocation("npcs." + key + ".meta.spawnLocation");
+        String name = CONFIGURATION.getString("npcs." + key + ".meta.spawnName");
+        List<String> names = CONFIGURATION.getStringList("npcs." + key + ".meta.names");
+        Skin skin = new Skin(CONFIGURATION.getString("npcs." + key + ".meta.skin.name"),
+                CONFIGURATION.getString("npcs." + key + ".meta.skin.value"),
+                CONFIGURATION.getString("npcs." + key + ".meta.skin.signature"));
+        boolean shift = CONFIGURATION.getBoolean("npcs." + key + ".state.shift");
+        boolean lockToPlayer = CONFIGURATION.getBoolean("npcs." + key + ".state.lockToPlayer");
+        boolean isSpawned = CONFIGURATION.getBoolean("npcs." + key + ".state.isSpawned");
         List<Pair<NPCItemSlot, ItemStack>> items = new ArrayList<>();
-        for (String section : configuration.getConfigurationSection("meta.items").getKeys(false)) {
-           items.add(new Pair<>(NPCItemSlot.valueOf(section), configuration.getItemStack("npcs." + key + ".state.items." + section)));
+        for (String section : CONFIGURATION.getConfigurationSection("meta.items").getKeys(false)) {
+           items.add(new Pair<>(NPCItemSlot.valueOf(section), CONFIGURATION.getItemStack("npcs." + key + ".state.items." + section)));
         }
         NPC npc = NpcLibApi.createNPC(location, name);
         npc.setDisplayName(names.toArray(new String[0]));
@@ -78,7 +78,7 @@ public class NPCConfig {
 
     public static void save() {
         try {
-            configuration.save(file);
+            CONFIGURATION.save(FILE);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

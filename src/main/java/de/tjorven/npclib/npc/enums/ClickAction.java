@@ -1,4 +1,4 @@
-package de.tjorven.npclib.npc.actions;
+package de.tjorven.npclib.npc.enums;
 
 public enum ClickAction {
 

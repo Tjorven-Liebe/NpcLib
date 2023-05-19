@@ -1,12 +1,16 @@
 package de.tjorven.npclib.npc;
 
-import de.tjorven.npclib.npc.actions.NPCItemSlot;
+import de.tjorven.npclib.npc.enums.Hand;
+import de.tjorven.npclib.npc.enums.NPCItemSlot;
+import de.tjorven.npclib.npc.enums.ParrotVariant;
+import de.tjorven.npclib.npc.enums.Shoulder;
 import de.tjorven.npclib.npc.skin.ClothType;
 import de.tjorven.npclib.npc.skin.Skin;
 import de.tjorven.npclib.npc.skin.SkinUtil;
 import de.tjorven.npclib.util.Pair;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.Mob;
 import org.bukkit.inventory.ItemStack;
 
 import java.io.File;
@@ -105,6 +109,16 @@ public interface NPC {
      * the hand will be the main hand
      */
     void punch();
+
+    void setParrotOnShoulder(Shoulder shoulder, ParrotVariant variant, boolean value);
+
+    void setMainHand(Hand hand);
+
+    void setStingersInEntity(int flag);
+
+    void setArrowsInBody(int flag);
+
+    void toggleSpinAttack();
 
     /**
      * Toggles the shifting state of the npc

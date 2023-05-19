@@ -9,20 +9,20 @@ import org.jetbrains.annotations.NotNull;
 public class NPCSpawnEvent extends Event {
 
     private static final HandlerList HANDLERS = new HandlerList();
-    private final Location spawnLocation;
-    private final NPC npc;
+    private final Location SPAWN_LOCATION;
+    private final NPC NPC;
 
     public NPCSpawnEvent(NPC npc) {
-        this.npc = npc;
-        this.spawnLocation = npc.getSpawnLocation();
+        this.NPC = npc;
+        this.SPAWN_LOCATION = npc.getSpawnLocation();
     }
 
     public Location getSpawnLocation() {
-        return spawnLocation;
+        return SPAWN_LOCATION;
     }
 
     public NPC getNPC() {
-        return npc;
+        return NPC;
     }
 
     public static HandlerList getHandlerList() {

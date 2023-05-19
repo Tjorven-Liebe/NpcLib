@@ -3,7 +3,8 @@ package de.tjorven.npclib.netty;
 import de.tjorven.npclib.NpcLib;
 import de.tjorven.npclib.events.NPCPlayerInteractEvent;
 import de.tjorven.npclib.npc.NPC;
-import de.tjorven.npclib.npc.actions.ClickAction;
+import de.tjorven.npclib.npc.enums.ClickAction;
+import de.tjorven.npclib.util.save.NPCRegister;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
 import net.minecraft.network.protocol.game.ServerboundInteractPacket;
@@ -17,32 +18,33 @@ import java.util.UUID;
 
 public class ChannelDuplexListener extends ChannelDuplexHandler {
 
-    private final Player player;
-    private final Map<UUID, Long> longMap;
+    private final Player PLAYER;
+    private final Map<UUID, Long> LONG_MAP;
 
     public ChannelDuplexListener(Player player) {
-        this.player = player;
-        this.longMap = new HashMap<>();
+        this.PLAYER = player;
+        this.LONG_MAP = new HashMap<>();
     }
 
     @Override
     public void channelRead(@NotNull ChannelHandlerContext ctx, @NotNull Object msg) throws Exception {
         if (msg instanceof ServerboundInteractPacket packet) {
-            if (longMap.containsKey(player.getUniqueId()))
-                if (System.currentTimeMillis() - longMap.get(player.getUniqueId()) < 100) return;
-            longMap.put(player.getUniqueId(), System.currentTimeMillis());
+            if (LONG_MAP.containsKey(PLAYER.getUniqueId()))
+                if (System.currentTimeMillis() - LONG_MAP.get(PLAYER.getUniqueId()) < 100) return;
+            LONG_MAP.put(PLAYER.getUniqueId(), System.currentTimeMillis());
             int id = packet.getEntityId();
             Bukkit.getScheduler().scheduleSyncDelayedTask(NpcLib.getInstance(), () -> {
-                NPC npc = null;
-//                if (NPCRegister.containsNpc(id))
-//                    npc = NPCRegister.getNpc(id);
-//                else return;
+                NPC npc;
+                if (NPCRegister.contains(id))
+                    npc = NPCRegister.getNPC(id);
+                else return;
                 if (packet.getActionType().equals(ServerboundInteractPacket.ActionType.INTERACT)) {
-                    Bukkit.getPluginManager().callEvent(new NPCPlayerInteractEvent(player, npc, npc.getEntityId(), ClickAction.RIGHT_CLICK));
+                    Bukkit.getPluginManager().callEvent(new NPCPlayerInteractEvent(PLAYER, npc, npc.getEntityId(), ClickAction.RIGHT_CLICK));
+                } else if (packet.getActionType().equals(ServerboundInteractPacket.ActionType.ATTACK)) {
+                    Bukkit.getPluginManager().callEvent(new NPCPlayerInteractEvent(PLAYER, npc, npc.getEntityId(), ClickAction.LEFT_CLICK));
                 } else {
-                    Bukkit.getPluginManager().callEvent(new NPCPlayerInteractEvent(player, npc, npc.getEntityId(), ClickAction.LEFT_CLICK));
+                    Bukkit.getPluginManager().callEvent(new NPCPlayerInteractEvent(PLAYER, npc, npc.getEntityId(), ClickAction.RIGHT_CLICK));
                 }
-
             });
         }
         super.channelRead(ctx, msg);

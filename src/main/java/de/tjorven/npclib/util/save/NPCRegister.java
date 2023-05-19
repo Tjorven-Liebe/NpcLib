@@ -2,34 +2,41 @@ package de.tjorven.npclib.util.save;
 
 import de.tjorven.npclib.npc.NPC;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 
 public class NPCRegister {
 
-    public HashMap<Integer, NPC> npcs = new HashMap<>();
+    private static final HashMap<Integer, NPC> NPCS = new HashMap<>();
 
     public void load() {
 //        npcs.put()
     }
 
-    public void getNPC(int id) {
-        npcs.get(id);
+    public static NPC[] getNPCS() {
+        return NPCS.values().toArray(new NPC[0]);
     }
 
-    public void addNPC(int id, NPC npc) {
-        npcs.put(id, npc);
+    public static boolean contains(int id) {
+        return NPCS.containsKey(id);
     }
 
-    public void addNPC(NPC npc) {
+    public static NPC getNPC(int id) {
+        return NPCS.get(id);
+    }
+
+    public static void addNPC(int id, NPC npc) {
+        NPCS.put(id, npc);
+    }
+
+    public static void addNPC(NPC npc) {
         addNPC(npc.getEntityId(), npc);
     }
 
-    public void removeNPC(int id) {
-        npcs.remove(id);
+    public static void removeNPC(int id) {
+        NPCS.remove(id);
     }
 
-    public void removeNPC(NPC npc) {
-        npcs.remove(npc.getEntityId());
+    public static void removeNPC(NPC npc) {
+        NPCS.remove(npc.getEntityId());
     }
 }

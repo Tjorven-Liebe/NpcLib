@@ -9,23 +9,30 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 public class Register {
 
-    private final JavaPlugin plugin;
-    private ChannelPipeline pipeline;
-
     public Register(JavaPlugin plugin) {
-        this.plugin = plugin;
-        Bukkit.getOnlinePlayers().forEach(player -> {
-            pipeline = ((CraftPlayer) player).getHandle().connection.connection.channel.pipeline();
-            injectPlayer(player);
-        });
+        Bukkit.getOnlinePlayers().forEach(this::injectPlayer);
+    }
+
+    /**
+     * @param player for pipeline name
+     * @return true if registered
+     */
+    public boolean containsPlayer(Player player) {
+        ChannelPipeline pipeline = ((CraftPlayer) player).getHandle().connection.connection.channel.pipeline();
+        return pipeline.names().contains("npc_" + player.getName());
     }
 
     public void injectPlayer(Player player) {
+        dejectPlayer(player);
+        ChannelPipeline pipeline = ((CraftPlayer) player).getHandle().connection.connection.channel.pipeline();
         pipeline.addBefore("packet_handler", "npc_" + player.getName(), new ChannelDuplexListener(player));
     }
 
     public void dejectPlayer(Player player) {
-        pipeline.remove("npc_" + player);
+        if (containsPlayer(player)) {
+            ChannelPipeline pipeline = ((CraftPlayer) player).getHandle().connection.connection.channel.pipeline();
+            pipeline.remove("npc_" + player.getName());
+        }
     }
 
 }

@@ -11,26 +11,26 @@ public class NPCPlayerCollideEvent extends Event implements Cancellable {
 
     private static final HandlerList HANDLERS = new HandlerList();
     private boolean cancelled;
-    private final Player player;
-    private final NPC npc;
-    private final int id;
-    private final Location from;
-    private final Location to;
+    private final Player PLAYER;
+    private final NPC NPC;
+    private final int ID;
+    private final Location FROM;
+    private final Location TO;
 
     public NPCPlayerCollideEvent(Player player, NPC npc, Location from, Location to, int id) {
-        this.player = player;
-        this.npc = npc;
-        this.id = id;
-        this.from = from;
-        this.to = to;
+        this.PLAYER = player;
+        this.NPC = npc;
+        this.ID = id;
+        this.FROM = from;
+        this.TO = to;
     }
 
     public Location getFrom() {
-        return from;
+        return FROM;
     }
 
     public Location getTo() {
-        return to;
+        return TO;
     }
 
     public static HandlerList getHandlerList() {
@@ -48,15 +48,15 @@ public class NPCPlayerCollideEvent extends Event implements Cancellable {
     }
 
     public Player getPlayer() {
-        return player;
+        return PLAYER;
     }
 
     public NPC getNpc() {
-        return npc;
+        return NPC;
     }
 
     public int getId() {
-        return id;
+        return ID;
     }
 
     @Override

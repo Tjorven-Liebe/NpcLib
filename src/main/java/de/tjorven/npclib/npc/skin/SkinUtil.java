@@ -10,10 +10,10 @@ import java.util.concurrent.CompletableFuture;
 
 public class SkinUtil {
 
-    private static final MineskinClient mineskinClient = new MineskinClient("Java/1.0");
+    private static final MineskinClient MINESKIN_CLIENT = new MineskinClient("Java/1.0");
 
     public static CompletableFuture<Skin> createSkin(String name, String url) {
-        return mineskinClient.generateUrl(url).thenApplyAsync(mineSkin -> {
+        return MINESKIN_CLIENT.generateUrl(url).thenApplyAsync(mineSkin -> {
             Texture texture = mineSkin.data.texture;
             return new Skin(name, texture.getSignature(), texture.getValue());
         });
@@ -21,7 +21,7 @@ public class SkinUtil {
 
     public static CompletableFuture<Skin> createSkin(String name, File file) {
         try {
-            return mineskinClient.generateUpload(file).thenApplyAsync(mineSkin -> {
+            return MINESKIN_CLIENT.generateUpload(file).thenApplyAsync(mineSkin -> {
                 Texture texture = mineSkin.data.texture;
                 return new Skin(name, texture.getSignature(), texture.getValue());
             });
@@ -31,7 +31,7 @@ public class SkinUtil {
     }
 
     public static CompletableFuture<Skin> getSkin(UUID uuid) {
-        return mineskinClient.generateUser(uuid).thenApplyAsync(mineSkin -> {
+        return MINESKIN_CLIENT.generateUser(uuid).thenApplyAsync(mineSkin -> {
             Texture texture = mineSkin.data.texture;
             return new Skin(mineSkin.name, texture.getSignature(), texture.getValue());
         });
