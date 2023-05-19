@@ -1,6 +1,7 @@
 package de.tjorven.npclib.npc;
 
 import de.tjorven.npclib.npc.actions.NPCItemSlot;
+import de.tjorven.npclib.npc.skin.ClothType;
 import de.tjorven.npclib.npc.skin.Skin;
 import de.tjorven.npclib.npc.skin.SkinUtil;
 import de.tjorven.npclib.util.Pair;
@@ -15,22 +16,27 @@ import java.util.UUID;
 public interface NPC {
 
     /**
+     * @return The real name of the player set in the gameProfile
+     */
+    String getName();
+
+    /**
      * Gets the name of the ServerPlayer
      * it can have multiple lines
-     * @implNote "null" means that the nameTag is invisible
      *
      * @return name of the ServerPlayer
+     * @implNote "null" means that the nameTag is invisible
      */
-    String[] getName();
+    String[] getDisplayNames();
 
     /**
      * Sets the name of the ServerPlayer
      * it can have multiple lines
-     * @implNote set "null" to set the nameTag invisible
      *
      * @param name wished name of the player
+     * @implNote set no parameters to set the nameTag invisible
      */
-    void setName(String... name);
+    void setDisplayName(String... name);
 
     /**
      * MineSkin implementation from Base64 encoded image of Mojang REST API
@@ -43,7 +49,7 @@ public interface NPC {
 
     /**
      * Sets the skin of the ServerPlayer
-     * use {@link SkinUtil} and {@link NPCImpl} for creation
+     * use {@link SkinUtil} and {@link NPCImplementation} for creation
      *
      * @param skin sets the MineSkin Value and Signature of the player
      */
@@ -51,7 +57,7 @@ public interface NPC {
 
     /**
      * Sets the skin of the ServerPlayer
-     * use {@link SkinUtil} and {@link NPCImpl} for creation
+     * use {@link SkinUtil} and {@link NPCImplementation} for creation
      * Uses MineSkinApi for getting the skin
      *
      * @param uuid
@@ -60,7 +66,7 @@ public interface NPC {
 
     /**
      * Sets the skin of the ServerPlayer
-     * use {@link SkinUtil} and {@link NPCImpl} for creation
+     * use {@link SkinUtil} and {@link NPCImplementation} for creation
      * Uses MineSkinApi for getting the skin
      *
      * @param name name of the skin
@@ -70,7 +76,7 @@ public interface NPC {
 
     /**
      * Sets the skin of the ServerPlayer
-     * use {@link SkinUtil} and {@link NPCImpl} for creation
+     * use {@link SkinUtil} and {@link NPCImplementation} for creation
      * Uses MineSkinApi for getting the skin
      *
      * @param name name of the skin
@@ -79,10 +85,9 @@ public interface NPC {
     void setSkin(String name, File file);
 
     /**
+     * @return the location where the NPC was spawned
      * @implNote Will not return the accurate location of the ServerPlayer
      * @see Location for usage info
-     *
-     * @return the location where the NPC was spawned
      */
     Location getSpawnLocation();
 
@@ -102,48 +107,44 @@ public interface NPC {
     void punch();
 
     /**
-     * TODO: implement
+     * Toggles the shifting state of the npc
+     * It doesn't release after applied
+     *
      * @param value does the NPC shift
      */
     void toggleShift(boolean value);
 
     /**
+     * @return if the player is sneaking
+     */
+    boolean isShifting();
+
+    /**
      * Will send a ClientboundHurtAnimationPacket to the implemented player(s)
+     *
      * @implNote The ServerPlayer will not be damaged but the animation will be played
      */
     void damage();
 
     /**
-     * @see Entity#getEntityId()
-     *
      * @return the entityId of the ServerPlayer
+     * @see Entity#getEntityId()
      */
     int getEntityId();
 
     /**
      * Will always look to the player the SpawnPacket was sent
-     * @implNote though the ServerPlayer is only visible for players the SpawnPacket was sent to, the ServerPlayer will always look to yourself
      *
      * @param value should the NPC look to the player
+     * @implNote though the ServerPlayer is only visible for players the SpawnPacket was sent to, the ServerPlayer will always look to yourself
      */
     void lockViewToPlayer(boolean value);
 
     /**
-     * @see NPC#lockViewToPlayer(boolean)
-     *
      * @return true if the ServerPlayer is locked to the player
+     * @see NPC#lockViewToPlayer(boolean)
      */
-    boolean isLockedVieToPlayer();
-
-    /**
-     * Will set the items of the ServerPlayer
-     * @see Pair for usage info
-     * @see NPCItemSlot for usage info
-     * @see ItemStack for usage info
-     *
-     * @param items the items to set
-     */
-    void setItems(Pair<NPCItemSlot, ItemStack>... items);
+    boolean isLockedViewToPlayer();
 
     /**
      * Will return the items the NPC has set
@@ -151,6 +152,16 @@ public interface NPC {
      * @return Pair of NPCItemSlot and ItemStack
      */
     List<Pair<NPCItemSlot, ItemStack>> getItems();
+
+    /**
+     * Will set the items of the ServerPlayer
+     *
+     * @param items the items to set
+     * @see Pair for usage info
+     * @see NPCItemSlot for usage info
+     * @see ItemStack for usage info
+     */
+    void setItems(Pair<NPCItemSlot, ItemStack>... items);
 
     /**
      * Will spawn the ServerPlayer / NPC
@@ -162,8 +173,38 @@ public interface NPC {
     void spawn();
 
     /**
+     * @return if the npc is currently spawned
+     */
+    boolean isSpawned();
+
+    /**
      * Will despawn the ServerPlayer / NPC
+     *
      * @implNote the NPC will not be deleted, it will just be invisible
      */
     void despawn();
+
+
+    /**
+     * Set the skin layers that are active
+     *
+     * @param value value of the skin layers
+     * @see <a href="https://wikivg.tjorven-liebe.de/index.html#Client_Settings">Client Settings, Wiki.vg</a>
+     */
+    void setCloth(byte value);
+
+    /**
+     * Set the skin layers that are active
+     *
+     * @param value value of the skin layers
+     * @see <a href="https://wikivg.tjorven-liebe.de/index.html#Client_Settings">Client Settings, Wiki.vg</a>
+     */
+    void setCloth(ClothType type);
+
+    /**
+     * Rotates the head to the specified location
+     *
+     * @param location the specified location
+     */
+    void lookTo(Location location);
 }

@@ -9,6 +9,7 @@ public class NpcLib extends JavaPlugin {
     @Override
     public void onEnable() {
         instance = this;
+        new Register(this);
         super.onEnable();
     }
 

@@ -1,0 +1,5 @@
+name: NpcLib
+author: Cericx
+version: 1.0
+api-version: 1.19
+main: de.tjorven.npclib.NpcLib
