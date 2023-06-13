@@ -1,18 +1,19 @@
 package de.tjorven.npclib.npc;
 
-import de.tjorven.npclib.npc.enums.Hand;
-import de.tjorven.npclib.npc.enums.NPCItemSlot;
-import de.tjorven.npclib.npc.enums.ParrotVariant;
-import de.tjorven.npclib.npc.enums.Shoulder;
+import de.tjorven.npclib.npc.enums.*;
 import de.tjorven.npclib.npc.skin.ClothType;
 import de.tjorven.npclib.npc.skin.Skin;
 import de.tjorven.npclib.npc.skin.SkinUtil;
 import de.tjorven.npclib.util.Pair;
+import net.minecraft.world.item.alchemy.Potion;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Mob;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 
+import java.awt.*;
 import java.io.File;
 import java.util.List;
 import java.util.UUID;
@@ -64,7 +65,7 @@ public interface NPC {
      * use {@link SkinUtil} and {@link NPCImplementation} for creation
      * Uses MineSkinApi for getting the skin
      *
-     * @param uuid
+     * @param uuid the uniqueID of the player which has the wished skin
      */
     void setSkin(UUID uuid);
 
@@ -110,28 +111,72 @@ public interface NPC {
      */
     void punch();
 
+    void setPotionEffect(PotionEffectType effect, Color color);
+
+    void toggleElytraFly();
+
+    void toggleGlowEffect();
+
+    /**
+     * Sets the player in a swim position
+     */
+    void toggleSwimming();
+
+    /**
+     * Sets the player virtually on fire or disables it (toggle)
+     */
+    void toggleFire();
+
+    void jump();
+
+    /**
+     * I'ts not working perfect but it works
+     * //TODO: implement it in a better way
+     *
+     * @param mob the mob the serverplayer will ride
+     */
+    void setOnVehicle(Mob mob);
+
+    /**
+     * @param shoulder which shoulder
+     * @param variant  which color
+     * @param value    should the parrot be added or removed?
+     */
     void setParrotOnShoulder(Shoulder shoulder, ParrotVariant variant, boolean value);
 
+    /**
+     * Used in punch for example
+     *
+     * @param hand the new main hand
+     */
     void setMainHand(Hand hand);
 
+    /**
+     * Stingers are the tails of bees
+     *
+     * @param flag how many stingers should stick to the player
+     */
     void setStingersInEntity(int flag);
 
+    /**
+     * @param flag how many arrow should stick to the player
+     */
     void setArrowsInBody(int flag);
 
+    /**
+     * it's the attack type of riptide
+     */
     void toggleSpinAttack();
 
-    /**
-     * Toggles the shifting state of the npc
-     * It doesn't release after applied
-     *
-     * @param value does the NPC shift
-     */
-    void toggleShift(boolean value);
+    void setPose(EntityPose pose, boolean value);
 
     /**
-     * @return if the player is sneaking
+     * @param entityPose the Pose
+     * @return if player has pose entityPose
      */
-    boolean isShifting();
+    boolean isPosing(EntityPose entityPose);
+
+    EntityPose getPose();
 
     /**
      * Will send a ClientboundHurtAnimationPacket to the implemented player(s)
@@ -139,6 +184,12 @@ public interface NPC {
      * @implNote The ServerPlayer will not be damaged but the animation will be played
      */
     void damage();
+
+    void swingOffHand();
+
+    void takeCritical();
+
+    void takeMagicalCritical();
 
     /**
      * @return the entityId of the ServerPlayer
@@ -210,7 +261,7 @@ public interface NPC {
     /**
      * Set the skin layers that are active
      *
-     * @param value value of the skin layers
+     * @param type value of the skin layers
      * @see <a href="https://wikivg.tjorven-liebe.de/index.html#Client_Settings">Client Settings, Wiki.vg</a>
      */
     void setCloth(ClothType type);

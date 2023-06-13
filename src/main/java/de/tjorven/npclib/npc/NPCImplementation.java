@@ -3,10 +3,7 @@ package de.tjorven.npclib.npc;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
 import de.tjorven.npclib.NpcLib;
-import de.tjorven.npclib.npc.enums.Hand;
-import de.tjorven.npclib.npc.enums.NPCItemSlot;
-import de.tjorven.npclib.npc.enums.ParrotVariant;
-import de.tjorven.npclib.npc.enums.Shoulder;
+import de.tjorven.npclib.npc.enums.*;
 import de.tjorven.npclib.npc.skin.ClothType;
 import de.tjorven.npclib.npc.skin.Skin;
 import de.tjorven.npclib.npc.skin.SkinUtil;
@@ -23,10 +20,11 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.util.Mth;
+import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.Pose;
-import net.minecraft.world.scores.PlayerTeam;
 import net.minecraft.world.entity.animal.Parrot;
+import net.minecraft.world.scores.PlayerTeam;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -34,13 +32,17 @@ import org.bukkit.craftbukkit.v1_19_R3.CraftWorld;
 import org.bukkit.craftbukkit.v1_19_R3.entity.CraftMob;
 import org.bukkit.craftbukkit.v1_19_R3.entity.CraftPlayer;
 import org.bukkit.craftbukkit.v1_19_R3.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.v1_19_R3.potion.CraftPotionEffectType;
 import org.bukkit.entity.*;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
 import org.bukkit.util.Vector;
 
+import java.awt.*;
 import java.io.File;
+import java.util.List;
 import java.util.*;
 
 public class NPCImplementation implements NPC {
@@ -193,6 +195,59 @@ public class NPCImplementation implements NPC {
     }
 
     @Override
+    public void setPotionEffect(PotionEffectType type, Color color) {
+        DATA.set(new EntityDataAccessor<>(10, EntityDataSerializers.INT), color.getRGB());
+        IMPLEMENTED_PLAYERS.forEach(player -> DATA.refresh(((CraftPlayer) player).getHandle()));
+        send(new ClientboundUpdateMobEffectPacket(SERVER_PLAYER.getId(), new MobEffectInstance(((CraftPotionEffectType) type).getHandle())));
+    }
+
+    @Override
+    public void toggleElytraFly() {
+        DATA.set(new EntityDataAccessor<>(0, EntityDataSerializers.BYTE), (byte) 0x80);
+        IMPLEMENTED_PLAYERS.forEach(player -> DATA.refresh(((CraftPlayer) player).getHandle()));
+    }
+
+    @Override
+    public void toggleGlowEffect() {
+        DATA.set(new EntityDataAccessor<>(0, EntityDataSerializers.BYTE), (byte) 0x40);
+        IMPLEMENTED_PLAYERS.forEach(player -> DATA.refresh(((CraftPlayer) player).getHandle()));
+    }
+
+    @Override
+    public void toggleSwimming() {
+        DATA.set(new EntityDataAccessor<>(0, EntityDataSerializers.BYTE), (byte) 0x10);
+        IMPLEMENTED_PLAYERS.forEach(player -> DATA.refresh(((CraftPlayer) player).getHandle()));
+    }
+
+    @Override
+    public void toggleFire() {
+        DATA.set(new EntityDataAccessor<>(0, EntityDataSerializers.BYTE), (byte) 0x01);
+        IMPLEMENTED_PLAYERS.forEach(player -> DATA.refresh(((CraftPlayer) player).getHandle()));
+    }
+
+    @Override
+    public void jump() {
+
+    }
+
+    /**
+     * Null for none
+     *
+     * @param mob the vehicle
+     */
+    @Override
+    public void setOnVehicle(Mob mob) {
+        try {
+            net.minecraft.world.entity.Mob handle = ((CraftMob) mob).getHandle();
+            handle.setNoAi(true);
+            if (handle.getPassengers().isEmpty()) {
+                SERVER_PLAYER.startRiding(handle);
+            }
+        } catch (Exception ignoredBecauseConnectionCannotBeNotNull) {
+        }
+    }
+
+    @Override
     public void setParrotOnShoulder(Shoulder shoulder, ParrotVariant variant, boolean value) {
         if (!value) {
             DATA.set(new EntityDataAccessor<>(19, EntityDataSerializers.COMPOUND_TAG), new CompoundTag());
@@ -212,7 +267,6 @@ public class NPCImplementation implements NPC {
     private CompoundTag createParrot(ParrotVariant variant) {
         Parrot parrot = new Parrot(net.minecraft.world.entity.EntityType.PARROT, ((CraftWorld) SPAWN_LOCATION.getWorld()).getHandle());
         CompoundTag tag = new CompoundTag();
-        System.out.println(tag.tags);
         parrot.setVariant(Parrot.Variant.valueOf(variant.name()));
         parrot.save(tag);
         return tag;
@@ -251,21 +305,43 @@ public class NPCImplementation implements NPC {
     }
 
     @Override
-    public void toggleShift(boolean value) {
-        DATA.set(new EntityDataAccessor<>(6, EntityDataSerializers.POSE), value ? Pose.CROUCHING : Pose.STANDING);
+    public void setPose(EntityPose pose, boolean value) {
+        DATA.set(new EntityDataAccessor<>(6, EntityDataSerializers.POSE), value ? Pose.valueOf(pose.name()) : Pose.STANDING);
         IMPLEMENTED_PLAYERS.forEach(player -> {
             DATA.refresh(((CraftPlayer) player).getHandle());
         });
     }
 
     @Override
-    public boolean isShifting() {
+    public boolean isPosing(EntityPose entityPose) {
         return false;
     }
 
     @Override
+    public EntityPose getPose() {
+        return null;
+    }
+
+    @Override
     public void damage() {
+        send(new ClientboundHurtAnimationPacket(getEntityId(), 0));
+        send(new ClientboundAnimatePacket(SERVER_PLAYER, 1));
         //TODO: send the damage packet to the player
+    }
+
+    @Override
+    public void swingOffHand() {
+        send(new ClientboundAnimatePacket(SERVER_PLAYER, 3));
+    }
+
+    @Override
+    public void takeCritical() {
+        send(new ClientboundAnimatePacket(SERVER_PLAYER, 4));
+    }
+
+    @Override
+    public void takeMagicalCritical() {
+        send(new ClientboundAnimatePacket(SERVER_PLAYER, 5));
     }
 
     @Override
@@ -314,8 +390,6 @@ public class NPCImplementation implements NPC {
 
     @Override
     public void setItems(Pair<NPCItemSlot, ItemStack>... items) {
-        //TODO: create a list of the items
-        //TODO: send ClientboundSetEquipmentPacket packet to implemented players
         List<com.mojang.datafixers.util.Pair<EquipmentSlot, net.minecraft.world.item.ItemStack>> list = new ArrayList<>();
         for (Pair<NPCItemSlot, ItemStack> item : items) {
             switch (item.getFirst()) {
@@ -339,6 +413,7 @@ public class NPCImplementation implements NPC {
                 }
             }
         }
+        send(new ClientboundSetEquipmentPacket(SERVER_PLAYER.getId(), list));
     }
 
     @Override

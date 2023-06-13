@@ -2,6 +2,7 @@ package de.tjorven.npclib.util.save;
 
 import de.tjorven.npclib.NpcLibApi;
 import de.tjorven.npclib.npc.NPC;
+import de.tjorven.npclib.npc.enums.EntityPose;
 import de.tjorven.npclib.npc.enums.NPCItemSlot;
 import de.tjorven.npclib.npc.skin.Skin;
 import de.tjorven.npclib.util.Pair;
@@ -32,14 +33,10 @@ public class NPCConfig {
         CONFIGURATION.set("npcs." + key + ".meta.skin.name", skin.getName());
         CONFIGURATION.set("npcs." + key + ".meta.skin.value", skin.getValue());
         CONFIGURATION.set("npcs." + key + ".meta.skin.signature", skin.getSignature());
-        CONFIGURATION.set("npcs." + key + ".state.shift", npc.isShifting());
+        CONFIGURATION.set("npcs." + key + ".state.shift", npc.getPose());
         CONFIGURATION.set("npcs." + key + ".state.lockToPlayer", npc.isLockedViewToPlayer());
         CONFIGURATION.set("npcs." + key + ".state.isSpawned", npc.isSpawned());
         save();
-    }
-
-    public static void remove(NPC npc) {
-
     }
 
     public static List<NPC> getNPCs() {
@@ -67,7 +64,6 @@ public class NPCConfig {
         NPC npc = NpcLibApi.createNPC(location, name);
         npc.setDisplayName(names.toArray(new String[0]));
         npc.setSkin(skin);
-        npc.toggleShift(shift);
         npc.lockViewToPlayer(lockToPlayer);
         if (isSpawned) {
             npc.spawn();
