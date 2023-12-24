@@ -38,9 +38,7 @@ public class ChannelDuplexListener extends ChannelDuplexHandler {
                 if (NPCRegister.contains(id))
                     npc = NPCRegister.getNPC(id);
                 else return;
-                if (packet.getActionType().equals(ServerboundInteractPacket.ActionType.INTERACT)) {
-                    Bukkit.getPluginManager().callEvent(new NPCPlayerInteractEvent(PLAYER, npc, npc.getEntityId(), ClickAction.RIGHT_CLICK));
-                } else if (packet.getActionType().equals(ServerboundInteractPacket.ActionType.ATTACK)) {
+                if (packet.isAttack()) {
                     Bukkit.getPluginManager().callEvent(new NPCPlayerInteractEvent(PLAYER, npc, npc.getEntityId(), ClickAction.LEFT_CLICK));
                 } else {
                     Bukkit.getPluginManager().callEvent(new NPCPlayerInteractEvent(PLAYER, npc, npc.getEntityId(), ClickAction.RIGHT_CLICK));

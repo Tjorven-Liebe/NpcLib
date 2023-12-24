@@ -9,8 +9,8 @@ public class Texture {
 	public String url;
 
 	public Texture(Property property) {
-		this.value = property.getValue();
-		this.signature = property.getSignature();
+		this.value = property.value();
+		this.signature = property.signature();
 	}
 
 	public Texture(String value, String signature) {

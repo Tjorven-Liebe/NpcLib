@@ -16,6 +16,7 @@ import net.minecraft.network.protocol.game.*;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ClientInformation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
@@ -28,11 +29,11 @@ import net.minecraft.world.scores.PlayerTeam;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
-import org.bukkit.craftbukkit.v1_19_R3.CraftWorld;
-import org.bukkit.craftbukkit.v1_19_R3.entity.CraftMob;
-import org.bukkit.craftbukkit.v1_19_R3.entity.CraftPlayer;
-import org.bukkit.craftbukkit.v1_19_R3.inventory.CraftItemStack;
-import org.bukkit.craftbukkit.v1_19_R3.potion.CraftPotionEffectType;
+import org.bukkit.craftbukkit.v1_20_R3.CraftWorld;
+import org.bukkit.craftbukkit.v1_20_R3.entity.CraftMob;
+import org.bukkit.craftbukkit.v1_20_R3.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v1_20_R3.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.v1_20_R3.potion.CraftPotionEffectType;
 import org.bukkit.entity.*;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffectType;
@@ -42,6 +43,7 @@ import org.bukkit.util.Vector;
 
 import java.awt.*;
 import java.io.File;
+import java.lang.reflect.Field;
 import java.util.List;
 import java.util.*;
 
@@ -63,7 +65,7 @@ public class NPCImplementation implements NPC {
             IMPLEMENTED_PLAYERS.addAll(Bukkit.getOnlinePlayers());
         ServerLevel handle = ((CraftWorld) location.getWorld()).getHandle();
         GAME_PROFILE = new GameProfile(UUID.randomUUID(), name);
-        SERVER_PLAYER = new ServerPlayer(handle.getServer(), handle, GAME_PROFILE);
+        SERVER_PLAYER = new ServerPlayer(handle.getServer(), handle, GAME_PROFILE, ClientInformation.createDefault());
         DATA = SERVER_PLAYER.getEntityData();
         DATA.set(new EntityDataAccessor<>(17, EntityDataSerializers.BYTE), (byte) 127);
         this.NAME = name;
@@ -421,15 +423,30 @@ public class NPCImplementation implements NPC {
         isSpawned = true;
         IMPLEMENTED_PLAYERS.forEach(player -> {
             ServerGamePacketListenerImpl connection = ((CraftPlayer) player).getHandle().connection;
-            connection.send(new ClientboundPlayerInfoUpdatePacket(ClientboundPlayerInfoUpdatePacket.Action.ADD_PLAYER, SERVER_PLAYER));
+            EnumSet<ClientboundPlayerInfoUpdatePacket.Action> actions = EnumSet.noneOf(ClientboundPlayerInfoUpdatePacket.Action.class);
+            actions.add(ClientboundPlayerInfoUpdatePacket.Action.ADD_PLAYER);
+            actions.add(ClientboundPlayerInfoUpdatePacket.Action.UPDATE_DISPLAY_NAME);
+            connection.send(new ClientboundPlayerInfoUpdatePacket(actions, getEntry(SERVER_PLAYER)));
             Bukkit.getScheduler().runTaskLaterAsynchronously(NpcLib.getInstance(), () -> {
                 connection.send(new ClientboundPlayerInfoRemovePacket(Collections.singletonList(SERVER_PLAYER.getUUID())));
             }, 20);
             SERVER_PLAYER.moveTo(SPAWN_LOCATION.getX(), SPAWN_LOCATION.getY(), SPAWN_LOCATION.getZ(), SPAWN_LOCATION.getYaw(), SPAWN_LOCATION.getPitch());
-            connection.send(new ClientboundAddPlayerPacket(SERVER_PLAYER));
+            connection.send(new ClientboundAddEntityPacket(SERVER_PLAYER));
             lookTo(SPAWN_LOCATION);
             DATA.refresh(((CraftPlayer) player).getHandle());
         });
+    }
+
+    private ClientboundPlayerInfoUpdatePacket.Entry getEntry(ServerPlayer npcPlayer) {
+        return new ClientboundPlayerInfoUpdatePacket.Entry(
+                npcPlayer.getUUID(),
+                npcPlayer.getGameProfile(),
+                false,
+                69,
+                npcPlayer.gameMode.getGameModeForPlayer(),
+                npcPlayer.getTabListDisplayName(),
+                null
+        );
     }
 
     @Override

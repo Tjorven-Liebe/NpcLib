@@ -1,9 +1,10 @@
 package de.tjorven.npclib;
 
+import de.tjorven.npclib.command.Test;
 import de.tjorven.npclib.netty.ChannelDuplexListener;
 import io.netty.channel.ChannelPipeline;
 import org.bukkit.Bukkit;
-import org.bukkit.craftbukkit.v1_19_R3.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v1_20_R3.entity.CraftPlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -11,6 +12,7 @@ public class Register {
 
     public Register(JavaPlugin plugin) {
         Bukkit.getOnlinePlayers().forEach(this::injectPlayer);
+        plugin.getCommand("test").setExecutor(new Test());
     }
 
     /**
